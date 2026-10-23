@@ -1,0 +1,64 @@
+/*
+  Animaciones — SB&NF Laboratorio (clínico, confiable, ordenado; nada llamativo).
+  Todo cuelga de `html.anim`, clase que añade animations.js solo cuando el JS cargó,
+  no hay prefers-reduced-motion y la URL no trae ?captura=1. Sin esa clase este
+  archivo no hace nada y el sitio se ve idéntico al original.
+  Solo opacity / translate / scale (no mueven el layout). Duraciones 300–800 ms, sin rebotes.
+*/
+
+@keyframes sb-rise { from { opacity: 0; translate: 0 16px; } }
+@keyframes sb-fade { from { opacity: 0; } }
+@keyframes sb-pop { from { opacity: 0; scale: .95; } }
+@keyframes sb-ring { 0% { opacity: .3; scale: 1; } 100% { opacity: 0; scale: 1.55; } }
+
+html.anim { scroll-behavior: smooth; }
+
+/* Elementos marcados: quedan en su 1.er fotograma (invisibles) hasta que JS les pone .is-in.
+   Con fill-mode backwards vuelven a su estado original al terminar. */
+html.anim [data-anim] {
+  animation-name: sb-rise;
+  animation-duration: .6s;
+  animation-timing-function: cubic-bezier(.22, .61, .36, 1);
+  animation-delay: var(--sb-d, 0s);
+  animation-fill-mode: backwards;
+  animation-play-state: paused;
+}
+html.anim [data-anim="hero"] { animation-duration: .7s; }
+html.anim [data-anim="fade"] { animation-name: sb-fade; animation-duration: .6s; animation-timing-function: ease-out; }
+html.anim [data-anim="pop"] { animation-name: sb-pop; animation-duration: .5s; animation-timing-function: ease-out; }
+html.anim [data-anim].is-in { animation-play-state: running; }
+html.anim [data-anim].is-instant { animation-duration: 0s; animation-delay: 0s; }
+
+/* --- Hover (solo escritorio con puntero) ------------------------------------ */
+@media (hover: hover) and (min-width: 1024px) {
+  html.anim [data-hover] {
+    transition-property: translate, scale, box-shadow, background-color, border-color, color, filter;
+    transition-duration: .3s;
+    transition-timing-function: ease;
+  }
+  html.anim [data-hover="btn"]:hover   { translate: 0 -1px; box-shadow: 0 8px 18px -8px rgba(0, 35, 87, .35); }
+  html.anim [data-hover="card"]:hover  { translate: 0 -3px; box-shadow: 0 14px 28px -12px rgba(16, 42, 67, .18); }
+  html.anim [data-hover="frame"]:hover { translate: 0 -3px; }
+}
+
+/* --- Móvil: botón fijo de WhatsApp con pulso suave y lento que se detiene tras 3 ciclos --- */
+html.anim #mobile-root > a.fixed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 9999px;
+  background: #25D366;
+  opacity: 0;
+  pointer-events: none;
+  animation: sb-ring 2.8s ease-out 2s 3 backwards;
+}
+
+/* --- Accesibilidad / modo captura -------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  html.anim *, html.anim *::before, html.anim *::after { animation: none !important; transition: none !important; }
+}
+html.captura { scroll-behavior: auto !important; }
+/* ?captura=1: nada se mueve (incluye el animate-ping que ya traía el botón flotante) */
+html.captura *, html.captura *::before, html.captura *::after { animation: none !important; transition: none !important; }
